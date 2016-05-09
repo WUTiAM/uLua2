@@ -1,0 +1,37 @@
+package my_project;
+
+import "__common_enums.proto";
+
+message _Position2D {
+  required float x = 1;
+  required float z = 2;
+}
+
+message _ServerTime {
+  required int32 server_time = 1;
+  required int32 server_timezone = 2;
+  optional int32 server_open_time = 3;
+}
+
+message _GoodsItem {
+  required int32 id = 1;
+  required int32 count = 2;
+}
+message _Goods {
+  repeated _GoodsItem goodsItems = 1;
+}
+
+message _Player {
+  required string user_id = 1;
+  required string player_id = 2;
+  required string player_name = 3;
+  required int32 level = 4;
+  required int32 experience = 5;
+  optional int32 union_id = 11;
+}
+
+message _Error {
+  optional _ErrorType error = 1;
+  optional _Player player = 2;
+  optional _Goods goods = 3;
+}

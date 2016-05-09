@@ -1,25 +1,20 @@
-﻿using UnityEngine;
-using System.Collections;
-using LuaInterface;
+﻿using LuaInterface;
+using System.Text;
+using UnityEngine;
 
-public class CreateGameObject : MonoBehaviour {
+public class CreateGameObject : MonoBehaviour
+{
+	private string script = @"
+			luanet.load_assembly('UnityEngine')
+			GameObject = luanet.import_type('UnityEngine.GameObject')
 
-    private string script = @"
-            luanet.load_assembly('UnityEngine')
-            GameObject = luanet.import_type('UnityEngine.GameObject')
+			local newGameObj = GameObject('NewObj')
+			newGameObj:AddComponent('ParticleSystem')
+		";
 
-            local newGameObj = GameObject('NewObj')
-            newGameObj:AddComponent('ParticleSystem')
-        ";
-
-	// Use this for initialization
-	void Start () {
-        LuaState l = new LuaState();
-        l.DoString(script);
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+	void Start()
+	{
+		LuaState l = new LuaState();
+		l.DoString( Encoding.UTF8.GetBytes( script ) );
 	}
 }

@@ -22,11 +22,11 @@ local table = table
 local ipairs = ipairs
 local tostring = tostring
 
-local descriptor = require "descriptor"
+local descriptor = require "depends/protobuf/descriptor"
 
-module "text_format"
+local text_format = {}
 
-function format(buffer)
+function text_format.format(buffer)
     local len = string.len( buffer )	
     for i = 1, len, 16 do		
         local text = ""	
@@ -39,7 +39,7 @@ end
 
 local FieldDescriptor = descriptor.FieldDescriptor
 
-msg_format_indent = function(write, msg, indent)
+text_format.msg_format_indent = function(write, msg, indent)
     for field, value in msg:ListFields() do
         local print_field = function(field_value)
             local name = field.name
@@ -51,7 +51,7 @@ msg_format_indent = function(write, msg, indent)
                 else
                     write(name .. " {\n")
                 end
-                msg_format_indent(write, field_value, indent + 4)
+                text_format.msg_format_indent(write, field_value, indent + 4)
                 write(string.rep(" ", indent))
                 write("}\n")
             else
@@ -68,12 +68,13 @@ msg_format_indent = function(write, msg, indent)
     end
 end
 
-function msg_format(msg)
+function text_format.msg_format(msg)
     local out = {}
     local write = function(value)
         out[#out + 1] = value
     end
-    msg_format_indent(write, msg, 0)
+    text_format.msg_format_indent(write, msg, 0)
     return table.concat(out)
 end
 
+return text_format

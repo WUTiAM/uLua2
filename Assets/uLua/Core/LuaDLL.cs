@@ -383,5 +383,7 @@ namespace LuaInterface
 		public static extern IntPtr luanet_gettag();
         [DllImport(LUADLL,CallingConvention=CallingConvention.Cdecl)]
         public static extern void luaL_where (IntPtr luaState, int level);
+		[DllImport(LUADLL,CallingConvention=CallingConvention.Cdecl)]
+		public static extern void luaopen_pb(IntPtr luaState);
 	}
 }

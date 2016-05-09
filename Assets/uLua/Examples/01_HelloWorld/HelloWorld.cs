@@ -1,17 +1,12 @@
-﻿using UnityEngine;
-using System.Collections;
-using LuaInterface;
+﻿using LuaInterface;
+using System.Text;
+using UnityEngine;
 
-public class HelloWorld : MonoBehaviour {
-
-	// Use this for initialization
-	void Start () {
-        LuaState l = new LuaState();
-        l.DoString("print('hello world 世界')");
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+public class HelloWorld : MonoBehaviour
+{
+	void Start()
+	{
+		LuaState l = new LuaState();
+		l.DoString( Encoding.UTF8.GetBytes( "print('hello world 世界')" ) );
 	}
 }

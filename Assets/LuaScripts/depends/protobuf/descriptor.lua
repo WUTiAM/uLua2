@@ -16,9 +16,9 @@
 --------------------------------------------------------------------------------
 --
 
-module "descriptor"
+local descriptor = {}
 
-FieldDescriptor = {
+descriptor.FieldDescriptor = {
     TYPE_DOUBLE         = 1,
     TYPE_FLOAT          = 2,
     TYPE_INT64          = 3,
@@ -62,3 +62,5 @@ FieldDescriptor = {
     LABEL_REPEATED      = 3,
     MAX_LABEL           = 3
 }
+
+return descriptor

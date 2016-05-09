@@ -1,0 +1,38 @@
+package my_project;
+
+import "__common_enums.proto";
+import "common_base.proto";
+
+// LOGIN
+
+message LoginRequest {
+  required int32 user_id = 1;
+  required string channel_uid = 2;
+}
+message LoginResponse {
+  required int32 user_id = 1;
+  optional _Player player = 11;
+}
+
+
+// CREATE_CHARACTER
+
+message CreateCharacterRequest {
+  required int32 user_id = 1;
+  required string player_name = 2;
+}
+message CreateCharacterResponse {
+  required int32 user_id = 1;
+}
+
+// LOGOUT
+
+message LogoutResponse {
+  required int32 user_id = 1;
+}
+
+// HEART_BEAT
+
+message HeartBeat {
+  required string player_id = 1;
+}

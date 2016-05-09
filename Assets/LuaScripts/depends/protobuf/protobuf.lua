@@ -28,18 +28,17 @@ local string = string
 local tostring = tostring
 local type = type
 
-local pb = require "pb"
-local wire_format = require "wire_format"
-local type_checkers = require "type_checkers"
-local encoder = require "encoder"
-local decoder = require "decoder"
-local listener_mod = require "listener"
-local containers = require "containers"
-local descriptor = require "descriptor"
+local wire_format = require "depends/protobuf/wire_format"
+local type_checkers = require "depends/protobuf/type_checkers"
+local encoder = require "depends/protobuf/encoder"
+local decoder = require "depends/protobuf/decoder"
+local listener_mod = require "depends/protobuf/listener"
+local containers = require "depends/protobuf/containers"
+local descriptor = require "depends/protobuf/descriptor"
 local FieldDescriptor = descriptor.FieldDescriptor
-local text_format = require "text_format"
+local text_format = require "depends/protobuf/text_format"
 
-module("protobuf")
+local protobuf = {}
 
 local function make_descriptor(name, descriptor, usable_key)
     local meta = {
@@ -56,7 +55,7 @@ local function make_descriptor(name, descriptor, usable_key)
         return setmetatable({}, meta)
     end
 
-    _M[name] = setmetatable(descriptor, meta);
+    protobuf[name] = setmetatable(descriptor, meta);
 end
 
 
@@ -108,6 +107,9 @@ make_descriptor("EnumValueDescriptor", {}, {
 })
 
 -- Maps from field type to expected wiretype.
+-- NOTE:
+-- FieldDescriptor is NOT the FieldDescriptor in table protobuf
+--                 is descriptor.FieldDescriptor
 local FIELD_TYPE_TO_WIRE_TYPE = {
     [FieldDescriptor.TYPE_DOUBLE] = wire_format.WIRETYPE_FIXED64,
     [FieldDescriptor.TYPE_FLOAT] = wire_format.WIRETYPE_FIXED32,
@@ -138,9 +140,9 @@ local NON_PACKABLE_TYPES = {
 
 local _VALUE_CHECKERS = {
     [FieldDescriptor.CPPTYPE_INT32] = type_checkers.Int32ValueChecker(),
-    [FieldDescriptor.CPPTYPE_INT64] = type_checkers.Int32ValueChecker(),
+    [FieldDescriptor.CPPTYPE_INT64] = type_checkers.Int64ValueChecker(),
     [FieldDescriptor.CPPTYPE_UINT32] = type_checkers.Uint32ValueChecker(),
-    [FieldDescriptor.CPPTYPE_UINT64] = type_checkers.Uint32ValueChecker(),
+    [FieldDescriptor.CPPTYPE_UINT64] = type_checkers.Uint64ValueChecker(),
     [FieldDescriptor.CPPTYPE_DOUBLE] = type_checkers.TypeChecker({number = true}),
     [FieldDescriptor.CPPTYPE_FLOAT] = type_checkers.TypeChecker({number = true}),
     [FieldDescriptor.CPPTYPE_BOOL] = type_checkers.TypeChecker({boolean = true, bool = true, int=true}),
@@ -285,7 +287,7 @@ local function _DefaultValueConstructorForField(field)
     if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE then
         local message_type = field.message_type
         return function (message)
-            result = message_type._concrete_class()
+            local result = message_type._concrete_class()
             result._SetListener(message._listener_for_children)
             return result
         end
@@ -368,7 +370,7 @@ local function _AddPropertiesForNonRepeatedCompositeField(field, message_meta)
         return field_value
     end
     message_meta._setter[property_name] = function(self, new_value)
-        error('Assignment not allowed to composite field' .. property_name .. 'in protocol message object.' )
+        error('Assignment not allowed to composite field ' .. property_name .. ' in protocol message object.' )
     end
 end
 
@@ -524,16 +526,26 @@ local function _AddHasFieldMethod(message_descriptor, message_meta)
         end
     end
     message_meta._member.HasField = function (self, field_name)
-        field = singular_fields[field_name]
+        local field = singular_fields[field_name]
         if field == nil then
             error('Protocol message has no singular "'.. field_name.. '" field.')
         end
         if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE then
-            value = self._fields[field]
+            local value = self._fields[field]
             return value ~= nil  and value._is_present_in_parent
         else
-            return self._fields[field]
+            return self._fields[field] ~= nil
         end
+    end
+end
+
+local function _AddHasFieldDefinedMethod(message_descriptor, message_meta)
+    local fields = {}
+    for _, field in ipairs(message_descriptor.fields) do
+        fields[field.name] = field
+    end
+    message_meta._member.HasFieldDefined = function(self, field_name)
+        return fields[field_name] ~= nil
     end
 end
 
@@ -749,12 +761,15 @@ local function _AddIsInitializedMethod(message_descriptor, message_meta)
 
         for _,field in ipairs(required_fields) do
             if not message_meta._member.HasField(self, field.name) then
-                errors.append(field.name) 
+                table.insert(errors, field.name)
             end
         end
 
         for field, value in message_meta._member.ListFields(self) do
             if field.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE then
+                local name = nil
+                local prefix = nil
+                local sub_errors = nil
                 if field.is_extension then
                     name = io:format("(%s)", field.full_name)
                 else
@@ -762,7 +777,7 @@ local function _AddIsInitializedMethod(message_descriptor, message_meta)
                 end
                 if field.label == FieldDescriptor.LABEL_REPEATED then
                     for i, element in ipairs(value) do
-                        prefix = io:format("%s[%d].", name, i)
+                        prefix = string.format("%s[%d].", name, i)
                         sub_errors = element:FindInitializationErrors()
                         for _, e in ipairs(sub_errors) do
                             errors[#errors + 1] = prefix .. e
@@ -809,6 +824,7 @@ end
 local function _AddMessageMethods(message_descriptor, message_meta)
     _AddListFieldsMethod(message_descriptor, message_meta)
     _AddHasFieldMethod(message_descriptor, message_meta)
+    _AddHasFieldDefinedMethod(message_descriptor, message_meta)
     _AddClearFieldMethod(message_descriptor, message_meta)
     if message_descriptor.is_extendable then
         _AddClearExtensionMethod(message_meta)
@@ -866,7 +882,7 @@ local function property_setter(message_meta)
 	end
 end
 
-function _AddClassAttributesForNestedExtensions(descriptor, message_meta)
+function protobuf._AddClassAttributesForNestedExtensions(descriptor, message_meta)
     local extension_dict = descriptor._extensions_by_name
     for extension_name, extension_field in pairs(extension_dict) do
         message_meta._member[extension_name] = extension_field
@@ -905,7 +921,7 @@ local function Message(descriptor)
         end
     end
     _AddEnumValues(descriptor, message_meta)
-    _AddClassAttributesForNestedExtensions(descriptor, message_meta)
+    protobuf._AddClassAttributesForNestedExtensions(descriptor, message_meta)
     _AddPropertiesForFields(descriptor, message_meta)
     _AddPropertiesForExtensions(descriptor, message_meta)
     _AddStaticMethods(message_meta)
@@ -918,5 +934,6 @@ local function Message(descriptor)
     return ns 
 end
 
-_M.Message = Message
+protobuf.Message = Message
 
+return protobuf

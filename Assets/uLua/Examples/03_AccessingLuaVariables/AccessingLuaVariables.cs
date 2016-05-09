@@ -1,48 +1,44 @@
-﻿using UnityEngine;
-using System.Collections;
-using LuaInterface;
+﻿using LuaInterface;
+using System.Text;
+using UnityEngine;
 
-public class AccessingLuaVariables : MonoBehaviour {
+public class AccessingLuaVariables : MonoBehaviour
+{
+	private string script = @"
+			luanet.load_assembly('UnityEngine')
+			GameObject = luanet.import_type('UnityEngine.GameObject')
 
-    private string script = @"
-            luanet.load_assembly('UnityEngine')
-            GameObject = luanet.import_type('UnityEngine.GameObject')
+			particles = {}
 
-            particles = {}
+			for i = 1, Objs2Spawn, 1 do
+				local newGameObj = GameObject('NewObj' .. tostring(i))
+				local ps = newGameObj:AddComponent('ParticleSystem')
+				ps:Stop()
 
-            for i = 1, Objs2Spawn, 1 do
-                local newGameObj = GameObject('NewObj' .. tostring(i))
-                local ps = newGameObj:AddComponent('ParticleSystem')
-                ps:Stop()
+				table.insert(particles, ps)
+			end
 
-                table.insert(particles, ps)
-            end
+			var2read = 42
+		";
 
-            var2read = 42
-        ";
+	void Start()
+	{
+		LuaState l = new LuaState();
 
-	// Use this for initialization
-	void Start () {
-        LuaState l = new LuaState();
-        // Assign to global scope variables as if they're keys in a dictionary (they are really)
-        l["Objs2Spawn"] = 5;
-        l.DoString(script);
+		// Assign to global scope variables as if they're keys in a dictionary (they are really)
+		l["Objs2Spawn"] = 5;
+		l.DoString( Encoding.UTF8.GetBytes( script ) );
 
-        // Read from the global scope the same way
-        print("Read from lua: " + l["var2read"].ToString());
+		// Read from the global scope the same way
+		print( "Read from lua: " + l["var2read"].ToString() );
 
-        // Get the lua table as LuaTable object
-        LuaTable particles = (LuaTable)l["particles"];
+		// Get the lua table as LuaTable object
+		LuaTable particles = (LuaTable)l["particles"];
 
-        // Typical foreach over values in table
-        foreach( ParticleSystem ps in particles.Values )
-        {
-            ps.Play();
-        }
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+		// Typical foreach over values in table
+		foreach( ParticleSystem ps in particles.Values )
+		{
+			ps.Play();
+		}
 	}
 }

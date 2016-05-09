@@ -1,0 +1,25 @@
+package my_project;
+
+enum _ErrorType {
+  ERROR_GOODS_ITEM_NOT_ENOUGH = 1;
+  ERROR_GOODS_ITEM_AMOUNT_OVERFLOW = 2;
+}
+
+enum _SystemId {
+  XXX_SYSTEM = 1;
+}
+
+enum _AssetType {
+  XXX_XXXX = 1;
+}
+
+enum _LoginResult {
+  LOGIN_SUCCESS = 0;
+  LOGIN_CHARACTER_NOT_EXIST = 1;
+  LOGIN_SESSION_EXPIRED = 2;
+}
+
+enum _CreatePlayerResult {
+  CREATE_PLAYER_DUPLICATED_NAME = 1;
+  CREATE_PLAYER_SENSITIVE_WORD = 2;
+}
