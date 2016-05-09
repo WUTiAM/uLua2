@@ -15,6 +15,7 @@ Suported platforms:
 
 已集成第三方组件：  
 Third-party integration:
+- [dkjson](http://dkolf.de/src/dkjson-lua.fsl/home)
 - [protoc-gen-lua](https://github.com/paynechu/protoc-gen-lua)
 
 ***
