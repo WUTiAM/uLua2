@@ -72,7 +72,9 @@ namespace LuaInterface
 	public class LuaDLL
 	{
         public static int LUA_MULTRET = -1;
-#if UNITY_IPHONE
+#if UNITY_EDITOR 
+		const string LUADLL = "ulua"; 
+#elif UNITY_IPHONE
         const string LUADLL = "__Internal";
 #else
         const string LUADLL = "ulua";
@@ -306,7 +308,14 @@ namespace LuaInterface
 		public static extern bool lua_toboolean(IntPtr luaState, int index);
 
 		[DllImport(LUADLL,CallingConvention = CallingConvention.Cdecl)]
-		public static extern IntPtr lua_tolstring(IntPtr luaState, int index, out int strLen);
+		public static extern IntPtr lua_tolstring(IntPtr luaState, int index, out IntPtr strLen);
+		public static IntPtr lua_tolstring(IntPtr luaState, int index, out int strLen)
+		{
+			IntPtr len;
+			IntPtr str = lua_tolstring(luaState, index, out len);
+			strLen = len.ToInt32();
+			return str;
+		}
 
 		public static string lua_tostring(IntPtr luaState, int index)
 		{
@@ -349,7 +358,7 @@ namespace LuaInterface
 		[DllImport(LUADLL,CallingConvention=CallingConvention.Cdecl)]
 		public static extern int lua_load(IntPtr luaState, LuaChunkReader chunkReader, ref ReaderInfo data, string chunkName);
 		[DllImport(LUADLL,CallingConvention=CallingConvention.Cdecl)]
-		public static extern int luaL_loadbuffer(IntPtr luaState, string buff, int size, string name);
+		public static extern int luaL_loadbuffer(IntPtr luaState, byte[] buff, int size, string name);
 		[DllImport(LUADLL,CallingConvention=CallingConvention.Cdecl)]
 		public static extern int luaL_loadfile(IntPtr luaState, string filename);
 		[DllImport(LUADLL,CallingConvention=CallingConvention.Cdecl)]

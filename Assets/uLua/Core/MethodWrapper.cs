@@ -131,6 +131,14 @@ namespace LuaInterface
             return Math.Ceiling(x) == x;
         }
 
+        private void ClearCachedArgs()
+        {
+            if(_LastCalledMethod.args == null) { return; }
+            for(int i = 0; i < _LastCalledMethod.args.Length; i++)
+            {
+                _LastCalledMethod.args[i] = null;
+            }
+        }
 
         /*
          * Calls the method. Receives the arguments from the Lua stack
@@ -261,6 +269,7 @@ namespace LuaInterface
 
                         _Translator.throwError(luaState, msg);
                         LuaDLL.lua_pushnil(luaState);
+                        ClearCachedArgs();
                         return 1;
                     }
                 }
@@ -289,6 +298,7 @@ namespace LuaInterface
                     {
                         _Translator.throwError(luaState, "unable to invoke method on generic class as the current method is an open generic method");
                         LuaDLL.lua_pushnil(luaState);
+                        ClearCachedArgs();
                         return 1;
                     }
                 }
@@ -304,6 +314,7 @@ namespace LuaInterface
                     {
                         _Translator.throwError(luaState, "invalid arguments to method call");
                         LuaDLL.lua_pushnil(luaState);
+                        ClearCachedArgs();
                         return 1;
                     }
                 }
@@ -312,7 +323,10 @@ namespace LuaInterface
             if (failedCall)
             {
                 if (!LuaDLL.lua_checkstack(luaState, _LastCalledMethod.outList.Length + 6))
+                {
+                    ClearCachedArgs();
                     throw new LuaException("Lua stack overflow");
+                }
                 try
                 {
                     if (isStatic)
@@ -329,10 +343,12 @@ namespace LuaInterface
                 }
                 catch (TargetInvocationException e)
                 {
+                    ClearCachedArgs();
                     return SetPendingException(e.GetBaseException());
                 }
                 catch (Exception e)
                 {
+                    ClearCachedArgs();
                     return SetPendingException(e);
                 }
             }
@@ -354,6 +370,7 @@ namespace LuaInterface
                 nReturnValues++;
             }
 
+            ClearCachedArgs();
             return nReturnValues < 1 ? 1 : nReturnValues;
         }
     }

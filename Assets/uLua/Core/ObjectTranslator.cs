@@ -24,22 +24,27 @@ namespace LuaInterface
 		public readonly Dictionary<object, int> objectsBackMap = new Dictionary<object, int>();
 		internal LuaState interpreter;
 		public MetaFunctions metaFunctions;
-		public List<Assembly> assemblies;
+		public List<Assembly> assemblies = new List<Assembly>();
 		private LuaCSFunction registerTableFunction,unregisterTableFunction,getMethodSigFunction,
 		getConstructorSigFunction,importTypeFunction,loadAssemblyFunction, ctypeFunction, enumFromIntFunction;
 		
 		internal EventHandlerContainer pendingEvents = new EventHandlerContainer();
+		int indexTranslator = 0;
+		static List<ObjectTranslator> list;
 		
 		public static ObjectTranslator FromState(IntPtr luaState)
 		{
 			LuaDLL.lua_getglobal(luaState, "_translator");
-			IntPtr thisptr = LuaDLL.lua_touserdata(luaState, -1);
+			int pos = (int)LuaDLL.lua_tonumber(luaState, -1);
 			LuaDLL.lua_pop(luaState, 1);
+			return list[pos];
+		}
 			
-			GCHandle handle = GCHandle.FromIntPtr(thisptr);
-			ObjectTranslator translator = (ObjectTranslator)handle.Target;
-			
-			return translator;
+		public void PushTranslator(IntPtr L) {
+			list.Add(this);
+			LuaDLL.lua_pushnumber(L, indexTranslator);
+			LuaDLL.lua_setglobal(L, "_translator");
+			++indexTranslator;
 		}
 		
 		public ObjectTranslator(LuaState interpreter,IntPtr luaState)
@@ -47,18 +52,18 @@ namespace LuaInterface
 			this.interpreter=interpreter;
 			typeChecker=new CheckType(this);
 			metaFunctions=new MetaFunctions(this);
-			assemblies=new List<Assembly>();
 			assemblies.Add(Assembly.GetExecutingAssembly());
 
-			importTypeFunction=new LuaCSFunction(this.importType);
-			loadAssemblyFunction=new LuaCSFunction(this.loadAssembly);
-			registerTableFunction=new LuaCSFunction(this.registerTable);
-			unregisterTableFunction=new LuaCSFunction(this.unregisterTable);
-			getMethodSigFunction=new LuaCSFunction(this.getMethodSignature);
-			getConstructorSigFunction=new LuaCSFunction(this.getConstructorSignature);
+			list = new List<ObjectTranslator>();
+			importTypeFunction=new LuaCSFunction(ObjectTranslator.importType);
+			loadAssemblyFunction=new LuaCSFunction(ObjectTranslator.loadAssembly);
+			registerTableFunction=new LuaCSFunction(ObjectTranslator.registerTable);
+			unregisterTableFunction=new LuaCSFunction(ObjectTranslator.unregisterTable);
+			getMethodSigFunction=new LuaCSFunction(ObjectTranslator.getMethodSignature);
+			getConstructorSigFunction=new LuaCSFunction(ObjectTranslator.getConstructorSignature);
 			
-			ctypeFunction = new LuaCSFunction(this.ctype);
-			enumFromIntFunction = new LuaCSFunction(this.enumFromInt);
+			ctypeFunction = new LuaCSFunction(ObjectTranslator.ctype);
+			enumFromIntFunction = new LuaCSFunction(ObjectTranslator.enumFromInt);
 			
 			createLuaObjectList(luaState);
 			createIndexingMetaFunction(luaState);
@@ -538,7 +543,7 @@ namespace LuaInterface
 			}
 			
 			// Object already in the list of Lua objects? Push the stored reference.
-			bool found = objectsBackMap.TryGetValue(o, out index);
+			bool found = (!o.GetType().IsValueType) && objectsBackMap.TryGetValue(o, out index);
 			if(found)
 			{
 				LuaDLL.luaL_getmetatable(luaState,"luaNet_objects");
@@ -647,8 +652,7 @@ namespace LuaInterface
 			{
 				// Debug.WriteLine("Removing " + o.ToString() + " @ " + udata);
 				
-				objects.Remove(udata);
-				objectsBackMap.Remove(o);
+                collectObject(o, udata);
 			}
 		}
 		
@@ -662,7 +666,10 @@ namespace LuaInterface
 			// Debug.WriteLine("Removing " + o.ToString() + " @ " + udata);
 			
 			objects.Remove(udata);
+            if (!o.GetType().IsValueType)
+            {
 			objectsBackMap.Remove(o);
+            }
 		}
 		
 		
@@ -679,7 +686,10 @@ namespace LuaInterface
 			// Debug.WriteLine("Adding " + obj.ToString() + " @ " + index);
 			
 			objects[index] = obj;
+            if(!obj.GetType().IsValueType)
+            {
 			objectsBackMap[obj] = index;
+            }
 			
 			return index;
 		}

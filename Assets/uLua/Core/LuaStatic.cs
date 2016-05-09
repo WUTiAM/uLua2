@@ -74,7 +74,7 @@ namespace LuaInterface
 				return 0;
 			}
 			
-			LuaDLL.luaL_loadbuffer(L, file.text, Encoding.UTF8.GetByteCount(file.text), fileName);
+			LuaDLL.luaL_loadbuffer(L, file.bytes, file.bytes.Length, fileName);
 			
 			return 1;
 		}
@@ -97,7 +97,7 @@ namespace LuaInterface
 				return LuaDLL.lua_gettop(L) - n;
 			}
 			
-			if( LuaDLL.luaL_loadbuffer(L, file.text, Encoding.UTF8.GetByteCount(file.text), fileName) == 0 )
+			if( LuaDLL.luaL_loadbuffer(L, file.bytes, file.bytes.Length, fileName) == 0 )
 			{
 				LuaDLL.lua_call(L, 0, LuaDLL.LUA_MULTRET);
 			}

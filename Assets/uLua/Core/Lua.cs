@@ -54,10 +54,11 @@ namespace LuaInterface
             translator = new ObjectTranslator(this,L);
             LuaDLL.lua_replace(L, (int)LuaIndexes.LUA_GLOBALSINDEX);
 
-			GCHandle handle = GCHandle.Alloc(translator, GCHandleType.Pinned);
-			IntPtr thisptr = GCHandle.ToIntPtr(handle);
-			LuaDLL.lua_pushlightuserdata(L, thisptr);
-			LuaDLL.lua_setglobal(L, "_translator");
+			// GCHandle handle = GCHandle.Alloc(translator, GCHandleType.Pinned);
+			// IntPtr thisptr = GCHandle.ToIntPtr(handle);
+			// LuaDLL.lua_pushlightuserdata(L, thisptr);
+			// LuaDLL.lua_setglobal(L, "_translator");
+			translator.PushTranslator(L);	
 
             tracebackFunction = new LuaCSFunction(LuaStatic.traceback);
 
@@ -94,9 +95,11 @@ namespace LuaInterface
             }
             LuaDLL.lua_pushvalue( L, loaderFunc );
             LuaDLL.lua_rawseti( L, loaderTable, 1 );
+			LuaDLL.luaopen_pb( L );
             LuaDLL.lua_settop( L, 0 );
 
-            DoString(LuaStatic.init_luanet);
+			//DoString(LuaStatic.init_luanet);
+			DoString( System.Text.Encoding.ASCII.GetBytes( LuaStatic.init_luanet ) );
         }
 
         public void Close()
@@ -153,11 +156,11 @@ namespace LuaInterface
         /// <param name="chunk"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public LuaFunction LoadString(string chunk, string name, LuaTable env)
+		public LuaFunction LoadString(byte[] chunk, string name, LuaTable env)
         {
             int oldTop = LuaDLL.lua_gettop(L);
 
-            if (LuaDLL.luaL_loadbuffer(L, chunk, Encoding.UTF8.GetByteCount(chunk), name) != 0)
+			if (LuaDLL.luaL_loadbuffer(L, chunk, chunk.Length, name) != 0)
                 ThrowExceptionFromError(oldTop);
 
             if (env != null)
@@ -172,7 +175,7 @@ namespace LuaInterface
             return result;
         }
 
-        public LuaFunction LoadString(string chunk, string name)
+		public LuaFunction LoadString(byte[] chunk, string name)
         {
             return LoadString(chunk, name, null);
         }
@@ -193,7 +196,7 @@ namespace LuaInterface
                 ThrowExceptionFromError(oldTop);
             }
 
-            if( LuaDLL.luaL_loadbuffer(L, file.text, Encoding.UTF8.GetByteCount(file.text), fileName) != 0 )
+			if( LuaDLL.luaL_loadbuffer(L, file.bytes, file.bytes.Length, fileName) != 0 )
             {
                 ThrowExceptionFromError(oldTop);
             }
@@ -209,7 +212,7 @@ namespace LuaInterface
          * Excutes a Lua chunk and returns all the chunk's return
          * values in an array
          */
-        public object[] DoString(string chunk)
+		public object[] DoString(byte[] chunk)
         {
             return DoString(chunk,"chunk", null);
         }
@@ -220,10 +223,10 @@ namespace LuaInterface
         /// <param name="chunk">Chunk to execute</param>
         /// <param name="chunkName">Name to associate with the chunk</param>
         /// <returns></returns>
-        public object[] DoString(string chunk, string chunkName, LuaTable env)
+		public object[] DoString(byte[] chunk, string chunkName, LuaTable env)
         {
             int oldTop = LuaDLL.lua_gettop(L);
-            if (LuaDLL.luaL_loadbuffer(L, chunk, Encoding.UTF8.GetByteCount(chunk), chunkName) == 0)
+			if (LuaDLL.luaL_loadbuffer(L, chunk, chunk.Length, chunkName) == 0)
             {
                 if (env != null)
                 {
@@ -264,7 +267,7 @@ namespace LuaInterface
                 ThrowExceptionFromError(oldTop);
             }
 
-            if( LuaDLL.luaL_loadbuffer(L, file.text, Encoding.UTF8.GetByteCount(file.text), fileName) == 0 )
+			if( LuaDLL.luaL_loadbuffer(L, file.bytes, file.bytes.Length, fileName) == 0 )
             {
                 if (env != null)
                 {

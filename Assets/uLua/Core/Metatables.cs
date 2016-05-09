@@ -47,15 +47,15 @@ namespace LuaInterface
 		public MetaFunctions(ObjectTranslator translator)
 		{
 			this.translator = translator;
-			gcFunction = new LuaCSFunction(this.collectObject);
-			toStringFunction = new LuaCSFunction(this.toString);
-			indexFunction = new LuaCSFunction(this.getMethod);
-			newindexFunction = new LuaCSFunction(this.setFieldOrProperty);
-			baseIndexFunction = new LuaCSFunction(this.getBaseMethod);
-			callConstructorFunction = new LuaCSFunction(this.callConstructor);
-			classIndexFunction = new LuaCSFunction(this.getClassMethod);
-			classNewindexFunction = new LuaCSFunction(this.setClassFieldOrProperty);
-			execDelegateFunction = new LuaCSFunction(this.runFunctionDelegate);
+			gcFunction = new LuaCSFunction(MetaFunctions.collectObject);
+			toStringFunction = new LuaCSFunction(MetaFunctions.toString);
+			indexFunction = new LuaCSFunction(MetaFunctions.getMethod);
+			newindexFunction = new LuaCSFunction(MetaFunctions.setFieldOrProperty);
+			baseIndexFunction = new LuaCSFunction(MetaFunctions.getBaseMethod);
+			callConstructorFunction = new LuaCSFunction(MetaFunctions.callConstructor);
+			classIndexFunction = new LuaCSFunction(MetaFunctions.getClassMethod);
+			classNewindexFunction = new LuaCSFunction(MetaFunctions.setClassFieldOrProperty);
+			execDelegateFunction = new LuaCSFunction(MetaFunctions.runFunctionDelegate);
 		}
 		
 		/*
