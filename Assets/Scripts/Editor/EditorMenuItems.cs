@@ -31,7 +31,7 @@ public class EditorMenuItems : MonoBehaviour
 	{
 		string protoPath = Path.GetFullPath( Path.Combine( Application.dataPath, "../Proto" ) );
 
-		string protocVersionedFolderName = "protoc-2.4.1-win32";
+		string protocExeVersionedFolderName = "protobuf-2.4.1/src";
 		string protocGenLuaPluginFolderName = "protoc-gen-lua/plugin";
 #if UNITY_EDITOR_WIN
 		string protocFilename = "protoc.exe";
@@ -42,7 +42,7 @@ public class EditorMenuItems : MonoBehaviour
 		string protocGenLuaFilename = "protoc-gen-lua.sh";
 		string protocGenLuaGlobalFilename = "protoc-gen-lua-global.sh";
 #endif
-		string protocPathName = Path.GetFullPath( Application.dataPath + "/../Tools/" + Path.Combine( protocVersionedFolderName, protocFilename ) );
+		string protocPathName = Path.GetFullPath( Application.dataPath + "/../Tools/" + Path.Combine( protocExeVersionedFolderName, protocFilename ) );
 		string protocGenLuaPathName = Path.GetFullPath( Application.dataPath + "/../Tools/" + Path.Combine( protocGenLuaPluginFolderName, protocGenLuaFilename ) );
 		string protocGenLuaGlobalPathName = Path.GetFullPath( Application.dataPath + "/../Tools/" + Path.Combine( protocGenLuaPluginFolderName, protocGenLuaGlobalFilename ) );
 		string generatedProtoLuaPath = Path.GetFullPath( Application.dataPath + "/LuaScripts/pb" );
