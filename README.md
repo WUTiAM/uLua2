@@ -1,3 +1,4 @@
+<img align="right" src="https://raw.githubusercontent.com/WUTiAM/uLua2/master/ulua2logo.png" width="80" vspace="10" />
 # uLua²
 
 uLua² 是一套在 Unity 中使用 Lua（实现代码热更新）的手机游戏开发解决方案，并在已上线的 3D 卡牌 RPG 手游大作中表现优异。  
@@ -5,6 +6,8 @@ uLua² is a solution for mobile game development using Lua in Unity. It has been
 
 uLua² 源于已故 Unity 插件 [uLua](https://www.assetstore.unity3d.com/en/#!/content/13887) 最后的 1.03 版本，继续保持使用反射机制来完成 Lua 对 C# 的访问控制，并扩充为一套完整的 Unity + Lua 手游开发框架。当然，我们也修正了一些 uLua 旧有的问题，并扩展了少量功能（如支持 ARM64 等）。  
 uLua² is derived from the deprecated Unity plugin [uLua](https://www.assetstore.unity3d.com/en/#!/content/13887) (the last version is 1.03). We keeps the original reflection for Lua to C# as uLua did, and is a complete framework for mobile game development using Unity + Lua. We also fixed some bugs in uLua and added a few functions (i.e. ARM64 support).
+
+***
 
 特性：  
 Features:
