@@ -1,7 +1,7 @@
 # uLua²
 
 uLua² 是一套在 Unity 中使用 Lua（实现代码热更新）的手机游戏开发解决方案。  
-uLua² is a solution for mobile game using Lua in Unity.
+uLua² is a solution for mobile game development using Lua in Unity.
 
 要求：  
 Requires:
