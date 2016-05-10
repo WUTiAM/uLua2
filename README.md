@@ -1,4 +1,4 @@
-<img align="right" src="https://raw.githubusercontent.com/WUTiAM/uLua2/master/ulua2logo.png" width="80" vspace="10" />
+<img align="right" src="https://raw.githubusercontent.com/WUTiAM/uLua2/master/ulua2logo.png" width="100" />
 # uLua²
 
 uLua² 是一套在 Unity 中使用 Lua（实现代码热更新）的手机游戏开发解决方案，并在已上线的 3D 卡牌 RPG 手游大作中表现优异。  
