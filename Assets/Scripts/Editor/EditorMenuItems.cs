@@ -233,4 +233,114 @@ public class EditorMenuItems : MonoBehaviour
 	{
 		EditorApplication.ExecuteMenuItem( "Edit/Project Settings/Graphics" );
 	}
+
+	//
+	// Build project and AssetBundles
+	//
+
+	[MenuItem( EDITOR_MENU_ROOT_NAME + "/Build AssetBundle - LuaScripts", false, 11010 )]
+	static void BuildAssetBundleLuaScripts()
+	{
+		string luaScriptsFolderName = "LuaScripts";
+		string luaScriptsResourcesFolderName = "Resources/" + luaScriptsFolderName;
+
+		string sourceDir = Path.Combine( Application.dataPath, luaScriptsFolderName );
+		string targetDir = Path.Combine( Application.dataPath, luaScriptsResourcesFolderName );
+		_DeleteAllInDirectory( targetDir );
+		_CopyDirectory( sourceDir, targetDir, true, "*.lua", ".bytes" );
+
+		string abName = "luascripts";
+
+		foreach( var assetGUID in AssetDatabase.FindAssets( "", new string[] { "Assets/" + luaScriptsResourcesFolderName } ) )
+		{
+			string assetPath = AssetDatabase.GUIDToAssetPath( assetGUID );
+			if( Path.GetExtension( assetPath ).ToLower() != ".bytes" )
+				continue;
+
+			AssetImporter assetImporter = AssetImporter.GetAtPath( assetPath );
+			if( assetImporter != null )
+			{
+				assetImporter.assetBundleName = abName;
+			}
+		}
+
+		AssetDatabase.Refresh();
+
+		string abRootPath = Path.GetFullPath( Path.Combine( Application.dataPath, "../AssetBundles" ) );
+
+		AssetBundleBuild abBuild = new AssetBundleBuild();
+		abBuild.assetBundleName = abName;
+
+		BuildPipeline.BuildAssetBundles( abRootPath );
+	}
+
+	static void _CopyLuaFile( string sourcePath, string targetPath )
+	{
+		using( StreamReader sr = new StreamReader( sourcePath ) )
+		{
+			string content = sr.ReadToEnd();
+
+			using( StreamWriter sw = new StreamWriter( targetPath ) )
+			{
+				sw.Write( content );
+			}
+		}
+	}
+
+	static void _CopyDirectory( string sourceDir, string targetDir, bool recursive = true, string searchPattern = "*", string targetFileExt = null )
+	{
+		if( !Directory.Exists( sourceDir ) )
+			return;
+
+		if( !Directory.Exists( targetDir ) )
+			Directory.CreateDirectory( targetDir );
+
+		foreach( var filePathName in Directory.GetFiles( sourceDir, searchPattern ) )
+		{
+			bool isHidden = ( ( File.GetAttributes( filePathName ) & FileAttributes.Hidden ) == FileAttributes.Hidden );
+			if( isHidden )
+				continue;
+
+			string targetFilename = Path.GetFileName( filePathName );
+			if( targetFileExt != null )
+			{
+				targetFilename = Path.ChangeExtension( targetFilename, targetFileExt );
+			}
+			File.Copy( filePathName, Path.Combine( targetDir, targetFilename ), true );
+		}
+
+		if( recursive )
+		{
+			foreach( var directory in Directory.GetDirectories( sourceDir ) )
+			{
+				DirectoryInfo info = new DirectoryInfo( directory );
+				bool isHidden = ( ( info.Attributes & FileAttributes.Hidden ) == FileAttributes.Hidden );
+				if( isHidden )
+					continue;
+
+				string targetPath = Path.Combine( targetDir, Path.GetFileName( directory ) );
+				if( !Directory.Exists( targetPath ) )
+				{
+					Directory.CreateDirectory( targetPath );
+				}
+				_CopyDirectory( directory, targetPath, recursive, searchPattern, targetFileExt );
+			}
+		}
+	}
+
+	static void _DeleteAllInDirectory( string dir )
+	{
+		if( !Directory.Exists( dir ) )
+			return;
+
+		foreach( var file in Directory.GetFiles( dir ) )
+		{
+			File.Delete( file );
+		}
+
+		foreach( var directory in Directory.GetDirectories( dir ) )
+		{
+			Directory.Delete( directory, true );
+		}
+	}
 }

@@ -3,3 +3,5 @@ Temp/
 *.csproj
 *.sln
 *.suo
+Assets/Resources/LuaScripts/
+Assets/Resources/LuaScripts.meta
