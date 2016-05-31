@@ -35,6 +35,11 @@ namespace LuaInterface
         {
             // Create State
             L = LuaDLL.luaL_newstate();
+			if (L == IntPtr.Zero)
+			{
+				Debug.LogError("Failed to create lua state!");
+				return;
+			}
 
             // Create LuaInterface library
             LuaDLL.luaL_openlibs(L);
