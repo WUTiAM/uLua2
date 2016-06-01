@@ -12,7 +12,8 @@ TARGET_STRIP=`xcrun -find -sdk iphoneos strip`
 # Build libluajit.a for armv7
 make -C $LUAJIT_VER clean
 ISDKF="-arch armv7 -isysroot $ISDK/SDKs/$ISDKVER"
-make -j2 -C $LUAJIT_VER BUILDMODE=static HOST_CC="gcc -m32 -arch i386" CC="$TARGET_CC" TARGET_FLAGS="$ISDKF" TARGET_SYS="iOS" TARGET_AR="$TARGET_AR" TARGET_STRIP="$TARGET_STRIP"
+make -j2 -C $LUAJIT_VER BUILDMODE=static CC="$TARGET_CC" HOST_CC="gcc -m32 -arch i386" \
+	TARGET_FLAGS="$ISDKF" TARGET_SYS="iOS" TARGET_AR="$TARGET_AR" TARGET_STRIP="$TARGET_STRIP"
 # Build lua_wrap.a for armv7
 $TARGET_CC $ISDKF -c lua_wrap.c -o ios/lua_wrap.o -I$LUAJIT_VER/src
 $TARGET_CC $ISDKF -c pb.c -o ios/pb.o -I$LUAJIT_VER/src
@@ -23,7 +24,8 @@ libtool -static -o ios/libulua-armv7.a $LUAJIT_VER/src/libluajit.a ios/lua_wrap.
 # Build libluajit.a for arm64
 make -C $LUAJIT_VER clean
 ISDKF="-arch arm64 -isysroot $ISDK/SDKs/$ISDKVER"
-make -j2 -C $LUAJIT_VER BUILDMODE=static HOST_CC="gcc -m64 -arch x86_64" CC="$TARGET_CC" TARGET_FLAGS="$ISDKF" TARGET_SYS="iOS" TARGET_AR="$TARGET_AR" TARGET_STRIP="$TARGET_STRIP"
+make -j2 -C $LUAJIT_VER BUILDMODE=static CC="$TARGET_CC" HOST_CC="gcc -m64 -arch x86_64" \
+	TARGET_FLAGS="$ISDKF" TARGET_SYS="iOS" TARGET_AR="$TARGET_AR" TARGET_STRIP="$TARGET_STRIP"
 # Build lua_wrap.a for arm64
 $TARGET_CC $ISDKF -c lua_wrap.c -o ios/lua_wrap.o -I$LUAJIT_VER/src
 $TARGET_CC $ISDKF -c pb.c -o ios/pb.o -I$LUAJIT_VER/src
