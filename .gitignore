@@ -5,3 +5,6 @@ Temp/
 *.suo
 Assets/Resources/LuaScripts/
 Assets/Resources/LuaScripts.meta
+*.o
+Tools/uLua/Source/LuaJIT-2.0.4/src/libluajit.so
+Tools/uLua/Source/LuaJIT-2.0.4/src/luajit

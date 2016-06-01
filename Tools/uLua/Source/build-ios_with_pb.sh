@@ -15,6 +15,7 @@ ISDKF="-arch armv7 -isysroot $ISDK/SDKs/$ISDKVER"
 make -j2 -C $LUAJIT_VER BUILDMODE=static CC="$TARGET_CC" HOST_CC="gcc -m32 -arch i386" \
 	TARGET_FLAGS="$ISDKF" TARGET_SYS="iOS" TARGET_AR="$TARGET_AR" TARGET_STRIP="$TARGET_STRIP"
 # Build lua_wrap.a for armv7
+mkdir -p ios
 $TARGET_CC $ISDKF -c lua_wrap.c -o ios/lua_wrap.o -I$LUAJIT_VER/src
 $TARGET_CC $ISDKF -c pb.c -o ios/pb.o -I$LUAJIT_VER/src
 $TARGET_AR ios/lua_wrap.a ios/lua_wrap.o ios/pb.o
@@ -35,3 +36,7 @@ libtool -static -o ios/libulua-arm64.a $LUAJIT_VER/src/libluajit.a ios/lua_wrap.
 
 # Build the universal libulua.a
 lipo -create ios/libulua-armv7.a ios/libulua-arm64.a -output Plugins/iOS/libulua.a
+
+make -C $LUAJIT_VER clean
+
+echo "==== Successfully built Plugins/iOS/libulua.a ===="
