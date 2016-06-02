@@ -14,3 +14,5 @@ cd ..
 cp -r osx/Build/Release/ulua.bundle Plugins/
 
 make -C $LUAJIT_VER clean
+
+echo "==== Successfully built Plugins/ulua.bundle ===="
