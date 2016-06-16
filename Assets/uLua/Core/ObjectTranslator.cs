@@ -29,19 +29,23 @@ namespace LuaInterface
 		getConstructorSigFunction,importTypeFunction,loadAssemblyFunction, ctypeFunction, enumFromIntFunction;
 		
 		internal EventHandlerContainer pendingEvents = new EventHandlerContainer();
-		int indexTranslator = 0;
-		static List<ObjectTranslator> list;
-		
+
+		static int indexTranslator = 0;
+		static List<GCHandle> list = new List<GCHandle>();
+
 		public static ObjectTranslator FromState(IntPtr luaState)
 		{
 			LuaDLL.lua_getglobal(luaState, "_translator");
 			int pos = (int)LuaDLL.lua_tonumber(luaState, -1);
 			LuaDLL.lua_pop(luaState, 1);
-			return list[pos];
+
+			GCHandle handle = list[pos];
+			ObjectTranslator translator = (ObjectTranslator)handle.Target;
+			return translator;
 		}
 			
-		public void PushTranslator(IntPtr L) {
-			list.Add(this);
+		public static void PushTranslator(IntPtr L, GCHandle handle) {
+			list.Add( handle );
 			LuaDLL.lua_pushnumber(L, indexTranslator);
 			LuaDLL.lua_setglobal(L, "_translator");
 			++indexTranslator;
@@ -54,16 +58,15 @@ namespace LuaInterface
 			metaFunctions=new MetaFunctions(this);
 			assemblies.Add(Assembly.GetExecutingAssembly());
 
-			list = new List<ObjectTranslator>();
-			importTypeFunction=new LuaCSFunction(ObjectTranslator.importType);
-			loadAssemblyFunction=new LuaCSFunction(ObjectTranslator.loadAssembly);
-			registerTableFunction=new LuaCSFunction(ObjectTranslator.registerTable);
-			unregisterTableFunction=new LuaCSFunction(ObjectTranslator.unregisterTable);
-			getMethodSigFunction=new LuaCSFunction(ObjectTranslator.getMethodSignature);
-			getConstructorSigFunction=new LuaCSFunction(ObjectTranslator.getConstructorSignature);
+			importTypeFunction=new LuaCSFunction(importType);
+			loadAssemblyFunction=new LuaCSFunction(loadAssembly);
+			registerTableFunction=new LuaCSFunction(registerTable);
+			unregisterTableFunction=new LuaCSFunction(unregisterTable);
+			getMethodSigFunction=new LuaCSFunction(getMethodSignature);
+			getConstructorSigFunction=new LuaCSFunction(getConstructorSignature);
 			
-			ctypeFunction = new LuaCSFunction(ObjectTranslator.ctype);
-			enumFromIntFunction = new LuaCSFunction(ObjectTranslator.enumFromInt);
+			ctypeFunction = new LuaCSFunction(ctype);
+			enumFromIntFunction = new LuaCSFunction(enumFromInt);
 			
 			createLuaObjectList(luaState);
 			createIndexingMetaFunction(luaState);

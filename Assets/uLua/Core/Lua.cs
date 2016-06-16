@@ -59,11 +59,8 @@ namespace LuaInterface
             translator = new ObjectTranslator(this,L);
             LuaDLL.lua_replace(L, (int)LuaIndexes.LUA_GLOBALSINDEX);
 
-			// GCHandle handle = GCHandle.Alloc(translator, GCHandleType.Pinned);
-			// IntPtr thisptr = GCHandle.ToIntPtr(handle);
-			// LuaDLL.lua_pushlightuserdata(L, thisptr);
-			// LuaDLL.lua_setglobal(L, "_translator");
-			translator.PushTranslator(L);	
+			GCHandle handle = GCHandle.Alloc( translator, GCHandleType.Pinned );
+			ObjectTranslator.PushTranslator(L, handle);
 
             tracebackFunction = new LuaCSFunction(LuaStatic.traceback);
 

@@ -7,10 +7,13 @@ public class LuaCoroutines : MonoBehaviour
 	// This example will print a fibonacci sequence for 1 to 10, waiting 1 second between each iteration
 	//
 	private string script = @"
+		luanet.load_assembly( 'UnityEngine' )
+		Time = luanet.import_type( 'UnityEngine.Time' )
+
 		-- This yields every frame that the global game time is still less than the desired timestamp
 		function waitSeconds(t)
-			local timeStamp = os.time() + t
-			while os.time() < timeStamp do
+			local timeStamp = Time.time + t
+			while Time.time < timeStamp do
 				coroutine.yield()
 			end
 		end
